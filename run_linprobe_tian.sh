@@ -28,8 +28,8 @@ for dataset in "${datasets[@]}"; do
     python \
     main_pretrain_tian.py \
     --output_dir output/scratch-slurm \
-    --batch_size 1024 \
-    --accum_iter 4 \
+    --batch_size 512 \
+    --accum_iter 8 \
     --model mae_vit_base_patch32 \
     --norm_pix_loss \
     --mask_ratio 0.75 \

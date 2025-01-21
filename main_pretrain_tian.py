@@ -117,6 +117,14 @@ def get_args_parser():
 
 
 def main(args):
+
+    print(f"MASTER_ADDR: {os.environ.get('MASTER_ADDR')}")
+    print(f"MASTER_PORT: {os.environ.get('MASTER_PORT')}")
+    print(f"WORLD_SIZE: {os.environ.get('WORLD_SIZE')}")
+    print(f"RANK: {os.environ.get('RANK')}")
+    print(f"LOCAL_RANK: {os.environ.get('LOCAL_RANK')}")
+
+
     misc.init_distributed_mode(args)
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
@@ -148,7 +156,7 @@ def main(args):
 
     # load the unlabeled dataset
     dataset_train = MyUnlabeledDataset(dataset_root=args.dataset_root,
-                                        split=args.u_train_split, 
+                                        split=args.train_split, 
                                         transform=transform_train,
                                         )
 
@@ -259,7 +267,7 @@ if __name__ == '__main__':
     print(f'args.dataset_path: {args.dataset_path}')
     print(f'args.retrieved_path: {args.retrieved_path}')
 
-    args.u_train_split = [
+    args.train_split = [
         [
         # f'fewshot{args.shots}_seed{args.seed}.txt', 
         # args.retrieval_split, 

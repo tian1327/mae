@@ -18,3 +18,9 @@ conda activate mae
 bash run_pretrain_tian.sh
 
 ```
+
+2. run linear probing on the pretrained model
+```bash
+
+bash run_linprobe_tian.sh
+```
