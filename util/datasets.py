@@ -16,6 +16,55 @@ from torchvision import datasets, transforms
 from timm.data import create_transform
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
+from torch.utils.data import Dataset
+import pathlib
+from torchvision.datasets import folder as dataset_parser
+
+
+class MyUnlabeledDataset(Dataset):
+    def __init__(self, dataset_root, split, transform,
+                 loader=dataset_parser.default_loader):
+        
+        self.dataset_root = pathlib.Path(dataset_root)
+        self.loader = loader
+
+        file_list = split[0]
+        path_list = split[1]
+
+        lines = []
+        for file, path in zip(file_list, path_list):
+            with open(os.path.join(self.dataset_root, file), 'r') as f:
+                line = f.readlines()
+                # prepend the path to the each line !!!
+                line = [os.path.join(path, l) for l in line]
+            lines.extend(line)
+
+        self.data = []
+        self.labels = []
+        for line in lines:
+            path, id, is_fewshot = line.strip('\n').split(' ')
+            file_path = path
+            self.data.append((file_path, int(id), int(is_fewshot)))
+            self.labels.append(int(id))
+        
+        self.targets = self.labels  # Sampler needs to use targets
+
+        self.transform = transform
+        print(f'# of images in {split}: {len(self.data)}')
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, i):
+        
+        img = self.loader(self.data[i][0])
+        label = self.data[i][1]
+        # source = self.data[i][2] # 0 for retrived data, 1 for fewshot data
+        img = self.transform(img) # this will return weak aug and strong aug
+        # tokenized_text = torch.zeros(1, 1).long() # dummy tokenized text
+
+        return img, label
+
 
 def build_dataset(is_train, args):
     transform = build_transform(is_train, args)
