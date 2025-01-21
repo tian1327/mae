@@ -4,9 +4,9 @@
 #SBATCH --get-user-env=L          # Replicate login environment
 
 ## NECESSARY JOB SPECIFICATIONS
-#SBATCH --job-name=mae_scratch_300eps
+#SBATCH --job-name=mae_scratch_300eps_vitb14
 #SBATCH --account=132713667044
-#SBATCH --time=8:00:00
+#SBATCH --time=24:00:00
 #SBATCH --ntasks-per-node=8
 #SBATCH --nodes=1
 #SBATCH --mem=20G

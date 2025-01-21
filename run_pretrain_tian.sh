@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# export MASTER_ADDR=localhost
-# export MASTER_PORT=29500
-# export WORLD_SIZE=1
-# export LOCAL_RANK=-1
-# export RANK=0
-
 datasets=(
     "semi-aves" 
     # "flowers102" 
@@ -27,10 +21,10 @@ for dataset in "${datasets[@]}"; do
     
     python \
     main_pretrain_tian.py \
-    --output_dir output/scratch-slurm \
-    --batch_size 1024 \
-    --accum_iter 4 \
-    --model mae_vit_base_patch32 \
+    --output_dir output/scratch-slurm-vitb14 \
+    --batch_size 256 \
+    --accum_iter 16 \
+    --model mae_vit_base_patch14 \
     --norm_pix_loss \
     --mask_ratio 0.75 \
     --warmup_epochs 10 \

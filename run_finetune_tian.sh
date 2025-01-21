@@ -23,7 +23,7 @@ for dataset in "${datasets[@]}"; do
     --output_dir output/scratch-linearprobe \
     --cls_token \
     --batch_size 32 \
-    --epochs 10 \
+    --epochs 100 \
     --blr 0.1 \
     --weight_decay 0.0 \
     --dataset $dataset \

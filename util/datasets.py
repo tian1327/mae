@@ -59,9 +59,7 @@ class MyUnlabeledDataset(Dataset):
         
         img = self.loader(self.data[i][0])
         label = self.data[i][1]
-        # source = self.data[i][2] # 0 for retrived data, 1 for fewshot data
-        img = self.transform(img) # this will return weak aug and strong aug
-        # tokenized_text = torch.zeros(1, 1).long() # dummy tokenized text
+        img = self.transform(img) 
 
         return img, label
 
