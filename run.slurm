@@ -4,7 +4,9 @@
 #SBATCH --get-user-env=L          # Replicate login environment
 
 ## NECESSARY JOB SPECIFICATIONS
-#SBATCH --job-name=mae_scratch_300eps_vitb14
+##SBATCH --job-name=mae_scratch_300eps_vitb14
+##SBATCH --job-name=imagenet-mae_full-LP
+#SBATCH --job-name=scratch-aves-vitb32-bs256-dec2b
 #SBATCH --account=132713667044
 #SBATCH --time=24:00:00
 #SBATCH --ntasks-per-node=8
@@ -27,7 +29,7 @@
 #export RANK=0
 
 bash run_pretrain_tian.sh
-
+#bash run_linprobe_tian.sh
 
 ##----------- Job Environment variables
 echo "Job ID: $SLURM_JOBID"

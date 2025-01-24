@@ -40,6 +40,8 @@ from engine_finetune import train_one_epoch, evaluate
 import yaml
 
 from util.datasets import MyUnlabeledDataset as MyDataset
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from util.datasets import CLIP_MEAN, CLIP_STD
 
 
 def get_args_parser():
@@ -72,6 +74,9 @@ def get_args_parser():
     # * Finetuning params
     parser.add_argument('--finetune', default='',
                         help='finetune from checkpoint')
+    parser.add_argument('--imgnet_pretrained', action='store_true', default=False,
+                        help='loaded model checkpoint is pretrained on ImageNet-1K')
+        
     parser.add_argument('--global_pool', action='store_true')
     parser.set_defaults(global_pool=False)
     parser.add_argument('--cls_token', action='store_false', dest='global_pool',
@@ -146,13 +151,15 @@ def main(args):
     cudnn.benchmark = True
 
     # linear probe: weak augmentation
+    MEAN = IMAGENET_DEFAULT_MEAN if args.imgnet_pretrained else CLIP_MEAN
+    STD = IMAGENET_DEFAULT_STD if args.imgnet_pretrained else CLIP_STD
+
     transform_train = transforms.Compose([
             RandomResizedCrop(224, interpolation=3),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            # For MAE pretraining on OpenCLIP, we use CLIP normalization
-            transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]),            
+            transforms.Normalize(mean=MEAN, std=STD),            
             ])
     
     transform_val = transforms.Compose([
@@ -160,8 +167,7 @@ def main(args):
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            # For MAE pretraining on OpenCLIP, we use CLIP normalization
-            transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]),            
+            transforms.Normalize(mean=MEAN, std=STD),           
             ])
     
     # dataset_train = datasets.ImageFolder(os.path.join(args.data_path, 'train'), transform=transform_train)
@@ -364,6 +370,7 @@ if __name__ == '__main__':
 
     args.train_split = [
         [
+        # f'train.txt', 
         f'fewshot{args.shots}_seed{args.fewshot_seed}.txt', 
         # args.retrieval_split, 
         # args.unlabeled_split

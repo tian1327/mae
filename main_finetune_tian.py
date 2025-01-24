@@ -37,6 +37,7 @@ from util.misc import NativeScalerWithGradNormCount as NativeScaler
 import models_vit
 
 from engine_finetune import train_one_epoch, evaluate
+import yaml
 
 
 def get_args_parser():
@@ -111,16 +112,33 @@ def get_args_parser():
     # * Finetuning params
     parser.add_argument('--finetune', default='',
                         help='finetune from checkpoint')
+    parser.add_argument('--imgnet_pretrained', action='store_true', default=False,
+                        help='loaded model checkpoint is pretrained on ImageNet-1K')
+    
     parser.add_argument('--global_pool', action='store_true')
     parser.set_defaults(global_pool=True)
     parser.add_argument('--cls_token', action='store_false', dest='global_pool',
                         help='Use class token instead of global pool for classification')
 
     # Dataset parameters
-    parser.add_argument('--data_path', default='/datasets01/imagenet_full_size/061417/', type=str,
-                        help='dataset path')
+    # parser.add_argument('--data_path', default='/datasets01/imagenet_full_size/061417/', type=str,
+    #                     help='dataset path')
+
+    parser.add_argument('--dataset', type=str, default='semi-aves', 
+                        choices=['semi-inat-2021', 'semi-aves', 'flowers102', 'cub2011', 'imagenet',
+                                 'fgvc-aircraft', 'dtd', 'eurosat',
+                                 'dtd_selected', 'oxford_pets', 'stanford_cars', 'food101',
+                                 'sun397', 'ucf101', 'caltech101'
+                                 ], 
+                        help='Dataset name.')
+
     parser.add_argument('--nb_classes', default=1000, type=int,
                         help='number of the classification types')
+
+    parser.add_argument('--shots', type=int, default=16, help='number of shots for fewshot data')
+    parser.add_argument('--fewshot_seed', type=int, default=1, help='Random seeds for different splits.')
+    parser.add_argument('--test_split', type=str, default='test.txt', help='test file name.')        
+
 
     parser.add_argument('--output_dir', default='./output_dir',
                         help='path where to save, empty for no saving')
@@ -138,7 +156,7 @@ def get_args_parser():
                         help='Perform evaluation only')
     parser.add_argument('--dist_eval', action='store_true', default=False,
                         help='Enabling distributed evaluation (recommended during training for faster monitor')
-    parser.add_argument('--num_workers', default=10, type=int)
+    parser.add_argument('--num_workers', default=8, type=int)
     parser.add_argument('--pin_mem', action='store_true',
                         help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--no_pin_mem', action='store_false', dest='pin_mem')
@@ -172,6 +190,7 @@ def main(args):
 
     dataset_train = build_dataset(is_train=True, args=args)
     dataset_val = build_dataset(is_train=False, args=args)
+
 
     if True:  # args.distributed:
         num_tasks = misc.get_world_size()
@@ -317,7 +336,7 @@ def main(args):
             log_writer=log_writer,
             args=args
         )
-        if args.output_dir:
+        if args.output_dir and (epoch+1)==args.epochs:
             misc.save_model(
                 args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
                 loss_scaler=loss_scaler, epoch=epoch)
@@ -353,4 +372,41 @@ if __name__ == '__main__':
     args = args.parse_args()
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+    
+    args.log_dir = os.path.join(args.output_dir, 'log')
+
+    # read the dataset and retrieved path from the config.yml file
+    with open('../SWAT/config.yml') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+        args.dataset_path = config['dataset_path']
+        args.retrieved_path = config['retrieved_path']
+    
+    args.dataset_root = f'../SWAT/data/{args.dataset}'
+
+    print(f'args.dataset_root: {args.dataset_root}')
+    print(f'args.dataset_path: {args.dataset_path}')
+    print(f'args.retrieved_path: {args.retrieved_path}')
+
+    args.train_split = [
+        [
+        f'fewshot{args.shots}_seed{args.fewshot_seed}.txt', 
+        # args.retrieval_split, 
+        # args.unlabeled_split
+         ], 
+        [
+            os.path.join(args.dataset_path, args.dataset), 
+            # os.path.join(args.retrieved_path, args.dataset),
+            # os.path.join(args.dataset_path, args.dataset)
+            ]
+        ]
+
+    args.test_split = [
+        [
+        f'test.txt', 
+         ], 
+        [
+            os.path.join(args.dataset_path, args.dataset), 
+            ]
+        ]        
+    
     main(args)

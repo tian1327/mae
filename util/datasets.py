@@ -20,6 +20,9 @@ from torch.utils.data import Dataset
 import pathlib
 from torchvision.datasets import folder as dataset_parser
 
+CLIP_MEAN = [0.48145466, 0.4578275, 0.40821073]
+CLIP_STD = [0.26862954, 0.26130258, 0.27577711]
+
 
 class MyUnlabeledDataset(Dataset):
     def __init__(self, dataset_root, split, transform,
@@ -67,17 +70,22 @@ class MyUnlabeledDataset(Dataset):
 def build_dataset(is_train, args):
     transform = build_transform(is_train, args)
 
-    root = os.path.join(args.data_path, 'train' if is_train else 'val')
-    dataset = datasets.ImageFolder(root, transform=transform)
+    # root = os.path.join(args.data_path, 'train' if is_train else 'val')
+    # dataset = datasets.ImageFolder(root, transform=transform)
+    
+    split = args.train_split if is_train else args.test_split
+    dataset = MyUnlabeledDataset(args.dataset_root, split, transform=transform)
 
-    print(dataset)
+    # print(dataset)
 
     return dataset
 
 
 def build_transform(is_train, args):
-    mean = IMAGENET_DEFAULT_MEAN
-    std = IMAGENET_DEFAULT_STD
+
+    mean = IMAGENET_DEFAULT_MEAN if args.imgnet_pretrained else CLIP_MEAN
+    std = IMAGENET_DEFAULT_STD if args.imgnet_pretrained else CLIP_STD
+
     # train transform
     if is_train:
         # this should always dispatch to transforms_imagenet_train
@@ -109,4 +117,5 @@ def build_transform(is_train, args):
 
     t.append(transforms.ToTensor())
     t.append(transforms.Normalize(mean, std))
+
     return transforms.Compose(t)

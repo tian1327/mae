@@ -1,3 +1,4 @@
 __pycache__/
 output/
 slurm_log/
+imagenet_pretrained_checkpoint/

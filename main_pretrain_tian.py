@@ -35,6 +35,8 @@ import models_mae
 from engine_pretrain import train_one_epoch
 import yaml
 from util.datasets import MyUnlabeledDataset
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from util.datasets import CLIP_MEAN, CLIP_STD
 
 
 def get_args_parser():
@@ -58,6 +60,9 @@ def get_args_parser():
     parser.add_argument('--norm_pix_loss', action='store_true',
                         help='Use (per-patch) normalized pixels as targets for computing loss')
     parser.set_defaults(norm_pix_loss=False)
+
+    parser.add_argument('--imgnet_pretrained', action='store_true', default=False,
+                        help='loaded model checkpoint is pretrained on ImageNet-1K')
 
     # Optimizer parameters
     parser.add_argument('--weight_decay', type=float, default=0.05,
@@ -140,16 +145,15 @@ def main(args):
     cudnn.benchmark = True
 
     # simple augmentation
+    MEAN = IMAGENET_DEFAULT_MEAN if args.imgnet_pretrained else CLIP_MEAN
+    STD = IMAGENET_DEFAULT_STD if args.imgnet_pretrained else CLIP_STD    
     transform_train = transforms.Compose([
             transforms.RandomResizedCrop(args.input_size, scale=(0.2, 1.0), interpolation=3),  # 3 is bicubic
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])],
-            
-            # For MAE pretraining on OpenCLIP, we use CLIP normalization
-            transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])],
-            
-            )
+            transforms.Normalize(mean=MEAN, std=STD),
+            ])
     
     # load dataset
     # dataset_train = datasets.ImageFolder(os.path.join(args.data_path, 'train'), transform=transform_train)
@@ -219,7 +223,7 @@ def main(args):
 
     print(f"Start training for {args.epochs} epochs")
     start_time = time.time()
-    for epoch in range(args.start_epoch, args.epochs):
+    for epoch in range(args.start_epoch+1, args.epochs+1):
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
         train_stats = train_one_epoch(
@@ -228,7 +232,7 @@ def main(args):
             log_writer=log_writer,
             args=args
         )
-        if args.output_dir and (epoch % 20 == 0 or epoch + 1 == args.epochs): # save checkpoint
+        if args.output_dir and (epoch % 100 == 0 or epoch == args.epochs): # save checkpoint
             misc.save_model(
                 args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
                 loss_scaler=loss_scaler, epoch=epoch)

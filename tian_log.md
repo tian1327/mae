@@ -19,8 +19,11 @@ bash run_pretrain_tian.sh
 
 ```
 
-2. run linear probing on the pretrained model
+2. run linear probing or few-shot finetuning on the pretrained model
 ```bash
 
 bash run_linprobe_tian.sh
+
+bash run_finetune_tian.sh
+
 ```
