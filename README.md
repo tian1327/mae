@@ -29,7 +29,7 @@ This is a PyTorch/GPU re-implementation of the paper [Masked Autoencoders Are Sc
 
 ### Visualization demo
 
-Run our interactive visualization demo using [Colab notebook](https://colab.research.google.com/github/facebookresearch/mae/blob/main/demo/mae_visualize.ipynb) (no GPU needed):
+Run our interactive visualization demo using [Colab notebook](https://colab.research.google.com/drive/1ROveTmxTHYKOaJ7jo55rXV0F7vKmXE9N?usp=sharing) (no GPU needed):
 <p align="center">
   <img src="https://user-images.githubusercontent.com/11435359/147859292-77341c70-2ed8-4703-b153-f505dcb6f2f8.png" width="600">
 </p>
