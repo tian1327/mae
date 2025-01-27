@@ -253,7 +253,18 @@ def main(args):
         checkpoint = torch.load(args.finetune, map_location='cpu')
 
         print("Load pre-trained checkpoint from: %s" % args.finetune)
-        checkpoint_model = checkpoint['model']
+        print("Keys in checkpoint:", checkpoint.keys())
+        
+        # checkpoint_model = checkpoint['model']
+        # Check if the checkpoint contains a 'model' key
+        if 'model' in checkpoint:
+            print("Using 'model' key from checkpoint.")
+            checkpoint_model = checkpoint['model']
+        else:
+            print("Using entire checkpoint as state_dict.")
+            checkpoint_model = checkpoint
+
+
         state_dict = model.state_dict()
         for k in ['head.weight', 'head.bias']:
             if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:

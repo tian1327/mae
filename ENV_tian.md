@@ -6,7 +6,7 @@ conda create -n mae python=3.8 -y
 
 conda activate mae
 
-conda install -c pytorch pytorch torchvision python
+conda install -c pytorch pytorch torchvision 
 
 pip install tensorboard
 

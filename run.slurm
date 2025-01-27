@@ -4,10 +4,8 @@
 #SBATCH --get-user-env=L          # Replicate login environment
 
 ## NECESSARY JOB SPECIFICATIONS
-##SBATCH --job-name=mae_scratch_300eps_vitb14
-##SBATCH --job-name=imagenet-mae_full-LP
-#SBATCH --job-name=scratch-aves-vitb32-bs256-dec2b
-#SBATCH --account=132713667044
+#SBATCH --job-name=maws_pretrained_vitb16_LP_eps100
+#SBATCH --account=132716300188
 #SBATCH --time=24:00:00
 #SBATCH --ntasks-per-node=8
 #SBATCH --nodes=1
@@ -19,7 +17,7 @@
 ##SBATCH --gres=gpu:t4:1
 #SBATCH --partition=gpu          # Submit job to the gpu queue
 #SBATCH --mail-type=END
-#SBATCH --mail-user=tian.liu@tamu.edu
+#SBATCH --mail-user=anwesha.basu@tamu.edu
 
 ## ----------- execute python script
 #export MASTER_ADDR=localhost
@@ -28,8 +26,10 @@
 #export LOCAL_RANK=0
 #export RANK=0
 
-bash run_pretrain_tian.sh
+#bash run_pretrain_tian.sh
 #bash run_linprobe_tian.sh
+#bash run_finetune_anwesha.sh
+bash run_linprobe_anwesha.sh
 
 ##----------- Job Environment variables
 echo "Job ID: $SLURM_JOBID"
