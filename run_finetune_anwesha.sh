@@ -35,10 +35,10 @@ for dataset in "${datasets[@]}"; do
 
     python \
     main_finetune_tian.py \
-    --finetune maws_checkpoints/maws_vit_b16.pt \
+    --finetune output/imagenet-vitb16-scratch-semi-aves/checkpoint-500.pth \
     --model vit_base_patch16 \
     --nb_classes 200 \
-    --output_dir output/maws_vit_b16/FSFT \
+    --output_dir output/imagenet-vitb16-scratch-semi-aves/FSFT-ckpt500 \
     --cls_token \
     --batch_size 32 \
     --epochs 100 \

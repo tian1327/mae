@@ -48,6 +48,9 @@ def get_args_parser():
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
     # Model parameters
+    parser.add_argument('--init_checkpoint', default='', type=str,
+                    help='Path to the pretrained ViT-B/16 checkpoint (for weight initialization only, not resuming training).')
+                    
     parser.add_argument('--model', default='mae_vit_large_patch16', type=str, metavar='MODEL',
                         help='Name of model to train')
 
@@ -194,6 +197,24 @@ def main(args):
     model = models_mae.__dict__[args.model](norm_pix_loss=args.norm_pix_loss)
 
     model.to(device)
+
+    # Load pretrained weights if specified
+    if args.init_checkpoint:
+        checkpoint = torch.load(args.init_checkpoint, map_location='cpu')
+        print(f"Loading pretrained checkpoint from {args.init_checkpoint}")
+    
+        # Compatibility check, although mae pretrained chekpoint should not have classification head
+        checkpoint_model = checkpoint['model'] if 'model' in checkpoint else checkpoint
+        unwanted_keys = ['head.weight', 'head.bias']
+    
+        for key in unwanted_keys:
+            if key in checkpoint_model:
+                print(f"Removing {key} from checkpoint")
+                del checkpoint_model[key]
+
+        # Load checkpoint weights into model
+        msg = model.load_state_dict(checkpoint_model, strict=False)
+        print(f"Checkpoint loaded with missing keys: {msg.missing_keys}")    
 
     model_without_ddp = model
     print("Model = %s" % str(model_without_ddp))

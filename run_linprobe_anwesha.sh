@@ -34,13 +34,13 @@ for dataset in "${datasets[@]}"; do
 
     python \
     main_linprobe_tian.py \
-    --finetune maws_checkpoints/maws_vit_b16.pt \
+    --finetune output/imagenet-vitb16-scratch-semi-aves/checkpoint-500.pth \
     --model vit_base_patch16 \
     --nb_classes 200 \
-    --output_dir output/maws_vit_b16/linearprobe \
+    --output_dir output/imagenet-vitb16-scratch-semi-aves/linearprobe-ckpt500 \
     --cls_token \
     --batch_size 32 \
-    --epochs 100 \
+    --epochs 20 \
     --blr 0.1 \
     --weight_decay 0.0 \
     --dataset $dataset \

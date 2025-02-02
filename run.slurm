@@ -4,7 +4,7 @@
 #SBATCH --get-user-env=L          # Replicate login environment
 
 ## NECESSARY JOB SPECIFICATIONS
-#SBATCH --job-name=maws_pretrained_vitb16_LP_eps100
+#SBATCH --job-name=mae_imagenet_pretrained_vitb16_ckpt500_scratch_aves_FSFT_eps100
 #SBATCH --account=132716300188
 #SBATCH --time=24:00:00
 #SBATCH --ntasks-per-node=8
@@ -28,8 +28,9 @@
 
 #bash run_pretrain_tian.sh
 #bash run_linprobe_tian.sh
-#bash run_finetune_anwesha.sh
-bash run_linprobe_anwesha.sh
+bash run_finetune_anwesha.sh
+#bash run_linprobe_anwesha.sh
+#bash run_pretrain_anwesha.sh
 
 ##----------- Job Environment variables
 echo "Job ID: $SLURM_JOBID"
