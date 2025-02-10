@@ -53,8 +53,11 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             samples, targets = mixup_fn(samples, targets)
 
         with torch.cuda.amp.autocast():
-            outputs = model(samples)
-            loss = criterion(outputs, targets)
+            if args.head_type == 'vit_head':
+                outputs, loss = forward_vit_head(model, samples, targets)
+            else:
+                outputs = model(samples)
+                loss = criterion(outputs, targets)
 
         loss_value = loss.item()
 
@@ -96,7 +99,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(data_loader, model, device):
+def evaluate(data_loader, model, device, args):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")
@@ -113,8 +116,11 @@ def evaluate(data_loader, model, device):
 
         # compute output
         with torch.cuda.amp.autocast():
-            output = model(images)
-            loss = criterion(output, target)
+            if args.head_type == 'vit_head':
+                output, loss = forward_vit_head(model, images, target)
+            else:
+                output = model(images)
+                loss = criterion(output, target)
 
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
 
@@ -128,3 +134,21 @@ def evaluate(data_loader, model, device):
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
+
+
+def forward_vit_head(model, x, target):
+    x = model.forward_features(x)
+    x = model.classifier_embed(x)
+    x = x + model.classifier_pos_embed[:, 0, :]
+    x = x.unsqueeze(1)
+
+    # Apply Transformer blocks
+    for blk in model.classifier_blocks:
+        x = blk(x)
+    x = model.classifier_norm(x)
+
+    # Get final class logits
+    head = model.classifier_pred(x)[:, 0]
+    head = model.classifier_pred(x[:, 0, :])
+    loss = torch.nn.CrossEntropyLoss()(head, target) if target is not None else None
+    return head, loss

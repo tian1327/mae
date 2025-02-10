@@ -33,18 +33,19 @@ for dataset in "${datasets[@]}"; do
 
 
     python \
-    main_linprobe_tian.py \
+    main_linprobe_anwesha.py \
     --finetune output/imagenet-vitb16-scratch-semi-aves/checkpoint-500.pth \
     --model vit_base_patch16 \
     --nb_classes 200 \
-    --output_dir output/imagenet-vitb16-scratch-semi-aves/linearprobe-ckpt500 \
+    --output_dir output/imagenet-vitb16-scratch-semi-aves/vit_probing \
     --cls_token \
     --batch_size 32 \
-    --epochs 20 \
-    --blr 0.1 \
-    --weight_decay 0.0 \
+    --epochs 100 \
+    --blr 1e-3 \
+    --weight_decay 0.2 \
     --dataset $dataset \
     --shot 16 \
     --fewshot_seed 1 \
+    --head_type vit_head
 
 done
